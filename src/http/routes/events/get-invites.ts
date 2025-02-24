@@ -1,4 +1,3 @@
-// src/http/routes/events/get-events.ts
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../../../lib/prisma'
@@ -36,32 +35,43 @@ export async function getInvites(app: FastifyInstance) {
                 startTime: z.coerce.date(),
                 endTime: z.coerce.date(),
                 createdBy: z.string(),
+                createdByName: z.string(),
                 createdAt: z.coerce.date(),
                 updatedAt: z.coerce.date(),
               }),
             })
           ),
         },
-
       },
     },
 
     async (request, reply) => {
       const { sub: userId } = await request.jwtVerify<{ sub: string }>()
 
-      // buscar todos convites pendetes
       const invites = await prisma.invite.findMany({
         where: {
           userId,
-          status: "PENDING"
+          status: 'PENDING',
         },
         include: {
           user: true,
-          event: true,
-        }
+          event: {
+            include: {
+              user: true, 
+            },
+          },
+        },
       })
 
-      return reply.status(200).send(invites)
-    },
+      const formattedInvites = invites.map((invite) => ({
+        ...invite,
+        event: {
+          ...invite.event,
+          createdByName: invite.event.user.name, 
+        },
+      }))
+
+      return reply.status(200).send(formattedInvites)
+    }
   )
 }
