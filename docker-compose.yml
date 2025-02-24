@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  pg:
+    image: bitnami/postgresql:latest
+    ports:
+      - '5242:5242'
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=token-lab-db
