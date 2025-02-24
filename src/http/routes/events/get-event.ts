@@ -1,17 +1,22 @@
-// src/http/routes/events/get-events.ts
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../../../lib/prisma'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { auth } from '../../middleware/auth'
 
+/**
+ * Função para obter os detalhes de um evento
+ * @route GET /events/:id
+ * @param {string} id - ID do evento
+ * @returns {Object} Detalhes do evento
+ */
 export async function getEvent(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().register(auth).get(
     '/events/:id',
     {
       schema: {
-        tags: ['Events'],
-        summary: 'Get event',
+        tags: ['Eventos'],
+        summary: 'Listar um evento',
         security: [{ bearerAuth: [] }],
         params: z.object({
           id: z.string().uuid()
@@ -30,10 +35,11 @@ export async function getEvent(app: FastifyInstance) {
         },
       },
     },
+
     async (request, reply) => {
       const {id} = request.params
       
-
+      // busca evento no banco
       const event = await prisma.event.findFirst({
         where: {
           id
@@ -41,7 +47,7 @@ export async function getEvent(app: FastifyInstance) {
       })
 
       if(!event){
-        throw new Error('Evento nao existe.')
+        throw new Error('Evento não encontrado!')
       }
 
       return reply.status(200).send(event)

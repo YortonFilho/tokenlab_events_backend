@@ -1,17 +1,21 @@
-// src/http/routes/events/get-events.ts
 import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { prisma } from '../../../lib/prisma'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { auth } from '../../middleware/auth'
 
+/**
+ * Função para obter todos os usuarios, menos o usuário autenticado
+ * @route GET /users
+ * @returns {Array<Object>} Lista de usuários
+ */
 export async function getUsers(app: FastifyInstance) {
     app.withTypeProvider<ZodTypeProvider>().register(auth).get(
         '/users',
         {
             schema: {
-                tags: ['Users'],
-                summary: 'Get all users',
+                tags: ['Usuários'],
+                summary: 'Listar todos usuários',
                 security: [{ bearerAuth: [] }],
                 response: {
                     200: z.array(
@@ -27,10 +31,12 @@ export async function getUsers(app: FastifyInstance) {
                 },
             },
         },
+
         async (request, reply) => {
+            // Coletando id do usuário logado
             const { sub: userId } = await request.jwtVerify<{ sub: string }>()
 
-
+            // Busnca todos usuários, menos o logado
             const users = await prisma.user.findMany({
                 where: {
                     NOT: {

@@ -1,7 +1,9 @@
+// Configuração do gerador do cliente Prisma
 generator client {
   provider = "prisma-client-js"
 }
 
+// Definição da fonte de dados, usando o PostgreSQL como banco de dados
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -33,6 +35,7 @@ model Event {
   @@unique([startTime, endTime, createdBy])
 }
 
+// Enumeração que define os possíveis status de um convite
 enum InviteStatus {
   PENDING
   ACCEPTED

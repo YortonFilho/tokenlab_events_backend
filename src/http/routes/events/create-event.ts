@@ -5,13 +5,20 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import * as bcrypt from 'bcryptjs'
 import { auth } from '../../middleware/auth'
 
+/**
+ * Função para criar um novo evento
+ * @route POST /events
+ * @param {string} body.description - descrição do evento
+ * @param {Date} body.startTime - data e hora de início do evento
+ * @param {Date} body.endTime - data e hora de término do evento
+ */
 export async function createEvent(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().register(auth).post(
     '/events',
     {
       schema: {
-        tags: ['Events'],
-        summary: 'Create a new event',
+        tags: ['Eventos'],
+        summary: 'Criar um evento novo',
         security: [{ bearerAuth: [] }],
         body: z.object({
           description: z.string(),
@@ -20,16 +27,18 @@ export async function createEvent(app: FastifyInstance) {
         }),
       },
     },
+
     async (request, reply) => {
       const { description, endTime, startTime } = request.body
 
+      // coleta id do usuario
       const { sub: userId } = await request.jwtVerify<{ sub: string }>()
 
       if(startTime === endTime){
-        throw new Error('O dia inicial nao pode ser o mesmo que o dia final.')
+        throw new Error('O dia inicial nao pode ser o mesmo que o dia final!')
       }
 
-
+      // cria evento no banco de dados
       const event = await prisma.event.create({
         data: {
           description,
@@ -39,7 +48,7 @@ export async function createEvent(app: FastifyInstance) {
         },
       })
 
-      return reply.status(201).send({ message: 'Event created successfully', event })
+      return reply.status(201).send({ message: 'Evento criado com sucesso!', event })
     },
   )
 }

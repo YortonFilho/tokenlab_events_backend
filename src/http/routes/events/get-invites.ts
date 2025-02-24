@@ -6,13 +6,18 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { auth } from '../../middleware/auth'
 import { InviteStatus } from '@prisma/client'
 
+/**
+ * Função para obter todos os convites pendentes do usuário
+ * @route GET /events/invites
+ * @returns {Array<Object>} Lista de convites pendentes para o usuário logado
+ */
 export async function getInvites(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().register(auth).get(
     '/events/invites',
     {
       schema: {
-        tags: ['Events'],
-        summary: 'Get all invites',
+        tags: ['Eventos'],
+        summary: 'Listar todos convites pendentes',
         security: [{ bearerAuth: [] }],
         response: {
           200: z.array(
@@ -40,9 +45,11 @@ export async function getInvites(app: FastifyInstance) {
 
       },
     },
+
     async (request, reply) => {
       const { sub: userId } = await request.jwtVerify<{ sub: string }>()
 
+      // buscar todos convites pendetes
       const invites = await prisma.invite.findMany({
         where: {
           userId,
